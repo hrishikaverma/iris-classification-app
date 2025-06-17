@@ -72,9 +72,7 @@ Pandas
 Hrishika Verma
 Made with ❤️ and learning spirit.
 
-yaml
-Copy
-Edit
+
 
 ---
 
