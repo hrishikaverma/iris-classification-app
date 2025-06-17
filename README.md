@@ -30,4 +30,61 @@ Each model is trained and compared for accuracy. You can select a model and inpu
 ### ✅ Clone the repo
 ```bash
 git clone https://github.com/hrishikaverma/iris-classification-app.git
+✅ Install dependencies
+bash
+Copy
+Edit
+pip install -r requirements.txt
+✅ Launch the Streamlit app
+bash
+Copy
+Edit
+streamlit run iris_app.py
+🖼️ App Features
+Interactive sliders to input flower features
+
+Dropdown to choose ML model
+
+Accuracy comparison of models
+
+Real-time species prediction
+
+Clean, responsive UI using Streamlit
+
+💻 Screenshot (Optional)
+Add a screenshot here if you like.
+
+📌 Deployment
+You can deploy this app to Streamlit Cloud for free:
+
+https://streamlit.io/cloud
+
+📚 Built With
+Python
+
+Streamlit
+
+Scikit-learn
+
+Pandas
+
+🙋‍♀️ Author
+Hrishika Verma
+Made with ❤️ and learning spirit.
+
+yaml
+Copy
+Edit
+
+---
+
+## 🔜 Next Steps After Creating `README.md`:
+
+1. Save file as `README.md` in the same folder.
+2. Git terminal open karo and type:
+
+```bash
+git add README.md
+git commit -m "Added README file"
+git push
 cd iris-classification-app
