@@ -23,10 +23,10 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 
 # Define models
 models = {
-    "Random Forest": RandomForestClassifier(),
+    "Random Forest": RandomForestClassifier(random_state=42),
     "Logistic Regression": LogisticRegression(max_iter=200),
     "Support Vector Machine": SVC(probability=True),
-    "Decision Tree": DecisionTreeClassifier()
+    "Decision Tree": DecisionTreeClassifier(random_state=42)
 }
 
 # Train models and store accuracy
@@ -39,29 +39,99 @@ for name, model in models.items():
 # --- Custom CSS for styling ---
 st.markdown("""
     <style>
+    /* Global font and background */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(120deg, #e0f7fa, #80deea);
+        color: #013440;
+    }
+    /* Title styling */
     .title {
-        color: #4B8BBE;
-        font-size: 42px;
-        font-weight: 800;
+        color: #00796b;
+        font-size: 48px;
+        font-weight: 900;
         text-align: center;
-        margin-bottom: 10px;
+        margin-bottom: 0;
+        padding-top: 10px;
+        font-family: 'Segoe UI Black', sans-serif;
+        text-shadow: 1px 1px 2px #004d40;
     }
+    /* Subtitle */
     .subheader {
-        color: #306998;
+        color: #004d40;
         font-size: 22px;
-        font-weight: 600;
-        margin-top: 15px;
+        font-weight: 700;
+        margin-top: 25px;
+        margin-bottom: 10px;
+        text-align: center;
     }
+    /* Accuracy text */
     .accuracy-text {
-        color: #444444;
+        color: #004d40;
         font-size: 18px;
         margin: 5px 0;
     }
+    /* Footer */
     .footer {
-        font-size: 12px;
-        color: gray;
+        font-size: 13px;
+        color: #004d40aa;
         text-align: center;
-        margin-top: 30px;
+        margin-top: 40px;
+        margin-bottom: 10px;
+        font-style: italic;
+    }
+    /* Sidebar styling */
+    .sidebar .sidebar-content {
+        background: #00695c;
+        color: #e0f2f1;
+        padding: 20px;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+    /* Sidebar header */
+    .sidebar .sidebar-content h2 {
+        color: #a7ffeb;
+        font-weight: 900;
+        font-size: 24px;
+    }
+    /* Sliders styling */
+    .stSlider > div {
+        color: #004d40;
+    }
+    /* Button styling */
+    div.stButton > button:first-child {
+        background-color: #00796b;
+        color: white;
+        font-weight: 700;
+        border-radius: 8px;
+        padding: 8px 20px;
+        transition: background-color 0.3s ease;
+        margin-top: 15px;
+    }
+    div.stButton > button:first-child:hover {
+        background-color: #004d40;
+        cursor: pointer;
+    }
+    /* Image styling */
+    .app-image {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        border-radius: 15px;
+        box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        margin-bottom: 15px;
+    }
+    /* Expander customization */
+    details > summary {
+        font-weight: 700;
+        font-size: 18px;
+        color: #00796b;
+        cursor: pointer;
+        margin-top: 25px;
+        margin-bottom: 10px;
+    }
+    details[open] > summary {
+        color: #004d40;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -69,11 +139,14 @@ st.markdown("""
 # Title with styling
 st.markdown('<div class="title">🌸 Iris Flower Classification Web App</div>', unsafe_allow_html=True)
 
-# Add image
-st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Iris_versicolor_3.jpg/320px-Iris_versicolor_3.jpg", width=300)
+# Add image with styling
+st.markdown(
+    '<img class="app-image" src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Iris_versicolor_3.jpg/320px-Iris_versicolor_3.jpg" alt="Iris Flower" width="320">',
+    unsafe_allow_html=True,
+)
 
-# Sidebar for model selection and inputs
-st.sidebar.header("Model & Input Settings")
+# Sidebar content
+st.sidebar.markdown('<h2>Model & Input Settings</h2>', unsafe_allow_html=True)
 
 model_choice = st.sidebar.selectbox("Choose model for prediction:", list(models.keys()))
 selected_model = models[model_choice]
@@ -89,17 +162,17 @@ st.markdown('<div class="subheader">Model Comparison Accuracy:</div>', unsafe_al
 
 acc_df = pd.DataFrame(list(accuracy.items()), columns=['Model', 'Accuracy'])
 
-# Bar chart using Altair
-chart = alt.Chart(acc_df).mark_bar(cornerRadiusTopLeft=5, cornerRadiusTopRight=5).encode(
+# Bar chart using Altair with smooth corners and tooltip
+chart = alt.Chart(acc_df).mark_bar(cornerRadiusTopLeft=6, cornerRadiusTopRight=6).encode(
     x=alt.X('Model', sort='-y'),
-    y='Accuracy',
-    color='Model',
+    y=alt.Y('Accuracy', scale=alt.Scale(domain=[0, 1])),
+    color=alt.Color('Model', legend=None),
     tooltip=['Model', alt.Tooltip('Accuracy', format='.2f')]
-).properties(width=600, height=300)
+).properties(width=650, height=320)
 
-st.altair_chart(chart)
+st.altair_chart(chart, use_container_width=True)
 
-# Also show accuracy as text list
+# Also show accuracy as styled text list
 for name, acc in accuracy.items():
     st.markdown(f'<div class="accuracy-text">- <b>{name}</b>: {acc:.2f}</div>', unsafe_allow_html=True)
 
