@@ -6,11 +6,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-import matplotlib.pyplot as plt
-import seaborn as sns
-from io import BytesIO
-from reportlab.pdfgen import canvas
+from sklearn.metrics import accuracy_score
+import altair as alt
 
 # Load data
 iris = load_iris()
@@ -39,71 +36,86 @@ for name, model in models.items():
     preds = model.predict(X_test)
     accuracy[name] = accuracy_score(y_test, preds)
 
-# Streamlit UI
-st.title("🌸 Iris Flower Classification Web App")
+# --- Custom CSS for styling ---
+st.markdown("""
+    <style>
+    .title {
+        color: #4B8BBE;
+        font-size: 42px;
+        font-weight: 800;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .subheader {
+        color: #306998;
+        font-size: 22px;
+        font-weight: 600;
+        margin-top: 15px;
+    }
+    .accuracy-text {
+        color: #444444;
+        font-size: 18px;
+        margin: 5px 0;
+    }
+    .footer {
+        font-size: 12px;
+        color: gray;
+        text-align: center;
+        margin-top: 30px;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-st.write("### Model Comparison Accuracy:")
-for name, acc in accuracy.items():
-    st.write(f"- **{name}**: {acc:.2f}")
+# Title with styling
+st.markdown('<div class="title">🌸 Iris Flower Classification Web App</div>', unsafe_allow_html=True)
 
-# Select model for prediction
-model_choice = st.selectbox("Choose model for prediction:", list(models.keys()))
+# Add image
+st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Iris_versicolor_3.jpg/320px-Iris_versicolor_3.jpg", width=300)
+
+# Sidebar for model selection and inputs
+st.sidebar.header("Model & Input Settings")
+
+model_choice = st.sidebar.selectbox("Choose model for prediction:", list(models.keys()))
 selected_model = models[model_choice]
 
-# Input sliders for features
-st.write("### Input Flower Measurements:")
+st.sidebar.markdown("### Input Flower Measurements:")
+sepal_length = st.sidebar.slider("Sepal Length (cm)", float(X['sepal length (cm)'].min()), float(X['sepal length (cm)'].max()), float(X['sepal length (cm)'].mean()))
+sepal_width = st.sidebar.slider("Sepal Width (cm)", float(X['sepal width (cm)'].min()), float(X['sepal width (cm)'].max()), float(X['sepal width (cm)'].mean()))
+petal_length = st.sidebar.slider("Petal Length (cm)", float(X['petal length (cm)'].min()), float(X['petal length (cm)'].max()), float(X['petal length (cm)'].mean()))
+petal_width = st.sidebar.slider("Petal Width (cm)", float(X['petal width (cm)'].min()), float(X['petal width (cm)'].max()), float(X['petal width (cm)'].mean()))
 
-sepal_length = st.slider("Sepal Length (cm)", float(X['sepal length (cm)'].min()), float(X['sepal length (cm)'].max()), float(X['sepal length (cm)'].mean()))
-sepal_width = st.slider("Sepal Width (cm)", float(X['sepal width (cm)'].min()), float(X['sepal width (cm)'].max()), float(X['sepal width (cm)'].mean()))
-petal_length = st.slider("Petal Length (cm)", float(X['petal length (cm)'].min()), float(X['petal length (cm)'].max()), float(X['petal length (cm)'].mean()))
-petal_width = st.slider("Petal Width (cm)", float(X['petal width (cm)'].min()), float(X['petal width (cm)'].max()), float(X['petal width (cm)'].mean()))
+# Show model accuracies with a chart and text
+st.markdown('<div class="subheader">Model Comparison Accuracy:</div>', unsafe_allow_html=True)
 
-# Predict button
+acc_df = pd.DataFrame(list(accuracy.items()), columns=['Model', 'Accuracy'])
+
+# Bar chart using Altair
+chart = alt.Chart(acc_df).mark_bar(cornerRadiusTopLeft=5, cornerRadiusTopRight=5).encode(
+    x=alt.X('Model', sort='-y'),
+    y='Accuracy',
+    color='Model',
+    tooltip=['Model', alt.Tooltip('Accuracy', format='.2f')]
+).properties(width=600, height=300)
+
+st.altair_chart(chart)
+
+# Also show accuracy as text list
+for name, acc in accuracy.items():
+    st.markdown(f'<div class="accuracy-text">- <b>{name}</b>: {acc:.2f}</div>', unsafe_allow_html=True)
+
+# Prediction button and output
 if st.button("Predict Species"):
-    sample = [[sepal_length, sepal_width, petal_length, petal_width]]
-    prediction = selected_model.predict(sample)
-    species_name = iris.target_names[prediction[0]]
-    st.success(f"Predicted Species: **{species_name}**")
+    with st.spinner('Predicting...'):
+        sample = [[sepal_length, sepal_width, petal_length, petal_width]]
+        prediction = selected_model.predict(sample)
+        species_name = iris.target_names[prediction[0]]
+        st.success(f"Predicted Species: **{species_name}**")
 
-    # PDF Export
-    buffer = BytesIO()
-    p = canvas.Canvas(buffer)
-    p.drawString(100, 750, "🌸 Iris Flower Classification Report")
-    p.drawString(100, 720, f"Model Used: {model_choice}")
-    p.drawString(100, 700, f"Predicted Species: {species_name}")
-    p.drawString(100, 680, f"Input Features:")
-    p.drawString(120, 660, f"Sepal Length: {sepal_length}")
-    p.drawString(120, 640, f"Sepal Width: {sepal_width}")
-    p.drawString(120, 620, f"Petal Length: {petal_length}")
-    p.drawString(120, 600, f"Petal Width: {petal_width}")
-    p.showPage()
-    p.save()
+# Expander with model details
+with st.expander("See Model Details"):
+    for name, model in models.items():
+        st.write(f"**{name}** model details:")
+        st.write(model)
 
-    buffer.seek(0)
-    st.download_button(label="📄 Download Prediction Report as PDF", data=buffer, file_name="iris_prediction_report.pdf")
-
-# Optional: Dataset Preview
-with st.expander("📊 Show Dataset Summary"):
-    st.write(df.head())
-    st.write(df.describe())
-
-# Optional: Confusion Matrix & Classification Report
-if st.checkbox("🔍 Show Confusion Matrix & Classification Report"):
-    y_pred = selected_model.predict(X_test)
-    cm = confusion_matrix(y_test, y_pred)
-    fig, ax = plt.subplots()
-    sns.heatmap(cm, annot=True, cmap="Blues", fmt="d", ax=ax)
-    st.pyplot(fig)
-
-    st.text("Classification Report:")
-    st.text(classification_report(y_test, y_pred, target_names=iris.target_names))
-
-# Optional: Feature Importance
-if model_choice in ["Random Forest", "Decision Tree"]:
-    st.subheader("📈 Feature Importance:")
-    importance = selected_model.feature_importances_
-    feat_imp_df = pd.DataFrame({
-        "Feature": X.columns,
-        "Importance": importance
-    }).sort_values(by="Importance", ascending=False)
-    st.bar_chart(feat_imp_df.set_index("Feature"))
+# Footer
+st.markdown('<div class="footer">Made with ❤️ using Streamlit & scikit-learn</div>', unsafe_allow_html=True)
