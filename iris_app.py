@@ -47,15 +47,13 @@ st.markdown("""
     }
     /* Title styling */
     .title {
-        color: #00796b;
-        font-size: 48px;
-        font-weight: 900;
-        text-align: center;
-        margin-bottom: 0;
-        padding-top: 10px;
-        font-family: 'Segoe UI Black', sans-serif;
-        text-shadow: 1px 1px 2px #004d40;
-    }
+    color: red;
+    font-size: 42px;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
     /* Subtitle */
     .subheader {
         color: #004d40;
